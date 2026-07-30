@@ -15,5 +15,4 @@ void send_exact(int fd, char *msg);
 
 void send_message(client *head, char *msg);
 
-
 #endif
