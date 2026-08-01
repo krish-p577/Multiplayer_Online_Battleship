@@ -1,16 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+// #include <unistd.h>
 #include <signal.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+// #include <sys/socket.h>
+// #include <netinet/in.h>
+
+#include "client_mgr.h"
+#include "game_logic.h"
 
 
-int socet_setup(int port){
+int socket_setup(int port){
 
 
-    if listen_fd = socket(AF_INET, SOCK_STREAM, 0) < 0{
+    int listen_fd;
+    if ((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("socket");
         exit(1);
     }
@@ -38,15 +42,59 @@ int socet_setup(int port){
         exit(1);
     }
 
-    return listen_fd
+    return listen_fd;
 
 }
 
-void main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     signal(SIGPIPE, SIG_IGN);
-    if argc != 2 {
+    if (argc != 2) {
         fprintf(stderr, "Usage: %s <port>\n", argv[0]);
         exit(1);
     }
-    
+    int port = atoi(argv[1]);
+    int listen_fd = socket_setup(port);
+    printf("Starting server on port %d...\n", port);
+
+    fd_set read_fds;
+    int max_fd;
+
+    while(1){
+        FD_ZERO(&read_fds);
+        FD_SET(listen_fd, &read_fds);
+        max_fd = listen_fd;
+        
+        client *curr = head;
+        while(curr != NULL){
+            FD_SET(curr->fd, &read_fds);
+            if(curr->fd > max_fd){
+                max_fd = curr->fd;
+            }
+            curr = curr->next;
+        }
+
+        if (select(max_fd + 1, &read_fds, NULL, NULL, NULL) < 0) {
+            perror("select");
+            exit(1);
+        }
+
+        if (FD_ISSET(listen_fd, &read_fds)) {
+            int new_fd = accept(listen_fd, NULL, NULL);
+            if (new_fd >= 0) {
+                add_client(new_fd);
+            }
+        }
+
+        curr = client_list;
+        while(curr != NULL){
+            client *next_client = curr->next;
+
+            if(FD_ISSET(curr->fd, &read_fds))
+            
+
+        }
+
+
+    close(listen_fd);
+    return 0;
 }
