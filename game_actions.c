@@ -4,6 +4,14 @@
 #include "client_actions.h"
 #include "game_actions.h"
 
+void send_message(client **head, client *curr_client, char *msg) {
+    int len = strlen(msg);
+    int written = write(curr_client->fd, msg, len);
+    if (written < len) {
+        remove_client(head, curr_client);
+    }
+}
+
 void process_message(client **head, client *sender, char *msg){
 
     if (strncmp(msg, "REG ", 4) == 0) {
