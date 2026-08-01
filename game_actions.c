@@ -60,7 +60,7 @@ void process_message(client **head, client *sender, char *msg){
             strcpy(sender->name, name);
             memcpy(sender->ship, temp_cells, sizeof(temp_cells));
 
-            // since the ship cells are good we can register the player
+            
             sender->state = 1;
             
             send_exact(sender->fd, "WELCOME\n");
@@ -74,46 +74,40 @@ void process_message(client **head, client *sender, char *msg){
             send_exact(sender->fd, "INVALID\n");
         }
     } 
-    // ---------------------------------------------------------
-    // 2. GAMEPLAY PHASE (BOMBING)
-    // ---------------------------------------------------------
+
     else if (strncmp(msg, "BOMB ", 5) == 0) {
-        int tx, ty; // Target X, Target Y
+        int tx, ty;
         
-        // Parse the bomb coordinates[cite: 1]
         if (sender->state == 1 && sscanf(msg, "BOMB %d %d", &tx, &ty) == 2) {
             
             int hit_anything = 0;
             client *curr = *head;
             
-            // Safe traversal: Save the next pointer before processing the current node
-            // because the current client might sink (and be deleted from the list!)
+            
             while (curr != NULL) {
                 client *next_client = curr->next;
                 
                 if (curr->state == 1) {
-                    // Check all 5 cells of the current player's ship
+    
                     for (int i = 0; i < 5; i++) {
                         if (curr->ship[i][0] == tx && curr->ship[i][1] == ty) {
                             hit_anything = 1;
                             
-                            // Only count the hit if this cell wasn't previously hit[cite: 1]
+                            
                             if (curr->ship[i][2] == 0) {
                                 curr->ship[i][2] = 1;
                                 curr->hits++;
                             }
                             
-                            // Broadcast the HIT message[cite: 1]
+                            
                             char hit_msg[128];
                             snprintf(hit_msg, sizeof(hit_msg), "HIT %s %d %d %s\n", sender->name, tx, ty, curr->name);
                             broadcast(*head, hit_msg);
                             
-                            // Check if the ship has sunk (all 5 cells hit)[cite: 1]
                             if (curr->hits == 5) {
-                                // Calling handle_disconnect cleanly broadcasts GG, closes the socket, 
-                                // and frees the memory for us![cite: 1]
+
                                 remove_client(head, curr);
-                                break; // Stop checking this ship, it's already gone
+                                break; 
                             }
                         }
                     }
@@ -121,7 +115,7 @@ void process_message(client **head, client *sender, char *msg){
                 curr = next_client;
             }
 
-            // If the loop finished and no ships were hit, broadcast a MISS[cite: 1]
+    
             if (!hit_anything) {
                 char miss_msg[128];
                 snprintf(miss_msg, sizeof(miss_msg), "MISS %s %d %d\n", sender->name, tx, ty);
@@ -132,9 +126,7 @@ void process_message(client **head, client *sender, char *msg){
             send_exact(sender->fd, "INVALID\n");
         }
     } 
-    // ---------------------------------------------------------
-    // 3. UNKNOWN COMMAND
-    // ---------------------------------------------------------
+
     else {
         send_exact(sender->fd, "INVALID\n");
     }
