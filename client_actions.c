@@ -26,10 +26,12 @@ client *create_client(int fd, client **head) {
 }
 
 void remove_client(client **head, client *curr_client) {
-    char msg[100];
-    snprintf(msg, sizeof(msg), "GG %s\n", curr_client->name);
+    if (curr_client->state == 1){
+        char msg[100];
+        snprintf(msg, sizeof(msg), "GG %s\n", curr_client->name);
 
-    send_message(*head, msg);
+        send_message(*head, msg);
+    }
 
     close(curr_client->fd);
 

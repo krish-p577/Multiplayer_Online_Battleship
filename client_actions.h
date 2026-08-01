@@ -22,8 +22,4 @@ client *create_client(int fd, client **head);
 
 void remove_client(client **head, client *client);
 
-client *find_client(client *head, int fd);
-
-client *find_client_by_name(client *head, char *name);
-
 #endif
