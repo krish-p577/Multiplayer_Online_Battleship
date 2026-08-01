@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
                 int bytes_read = read(curr->fd, curr->buff + curr->buff_size, space_left, 0);
                 
                 if(bytes_read <= 0){
-                    remove_client(&client_list, curr->fd);
+                    remove_client(&client_list, curr);
                 } else {
                     curr->buff_size += bytes_read;
                     
