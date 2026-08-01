@@ -18,9 +18,9 @@ typedef struct client{
     struct client *next;
 }client;
 
-client *create_client(int fd, char *name);
+client *create_client(int fd, client **head);
 
-void remove_client(client **head, int fd);
+void remove_client(client **head, client *client);
 
 client *find_client(client *head, int fd);
 

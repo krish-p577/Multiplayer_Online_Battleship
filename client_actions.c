@@ -24,3 +24,25 @@ client *create_client(int fd, client **head) {
     *head = new_client;
     return new_client;
 }
+
+void remove_client(client **head, client *curr_client) {
+    char msg[100];
+    snprintf(msg, sizeof(msg), "GG %s\n", curr_client->name);
+
+    send_message(*head, msg);
+
+    close(curr_client->fd);
+
+    if(*head == curr_client) {
+        *head = curr_client->next;
+    }else{
+        client *curr = *head;
+        while(curr != NULL && curr->next != curr_client) {
+            curr = curr->next;
+        }
+        if(curr != NULL) {
+            curr->next = curr_client->next;
+        }
+    }
+    free(curr_client);
+}
