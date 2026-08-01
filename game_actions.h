@@ -1,7 +1,8 @@
-#include "client_actions.h"
-
 #ifndef GAME_ACTIONS_H
 #define GAME_ACTIONS_H
+
+#include "client_actions.h"
+
 
 void process_message(client **head, client *curr_client, char *msg);
 
