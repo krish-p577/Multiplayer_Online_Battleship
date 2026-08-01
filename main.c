@@ -6,8 +6,8 @@
 // #include <sys/socket.h>
 // #include <netinet/in.h>
 
-#include "client_mgr.h"
-#include "game_logic.h"
+#include "client_actions.h"
+#include "game_actions.h"
 
 
 int socket_setup(int port){
@@ -54,6 +54,9 @@ int main(int argc, char *argv[]) {
     }
     int port = atoi(argv[1]);
     int listen_fd = socket_setup(port);
+
+    client *client_list = NULL; 
+
     printf("Starting server on port %d...\n", port);
 
     fd_set read_fds;
@@ -64,7 +67,7 @@ int main(int argc, char *argv[]) {
         FD_SET(listen_fd, &read_fds);
         max_fd = listen_fd;
         
-        client *curr = head;
+        client *curr = client_list; 
         while(curr != NULL){
             FD_SET(curr->fd, &read_fds);
             if(curr->fd > max_fd){
@@ -81,7 +84,7 @@ int main(int argc, char *argv[]) {
         if (FD_ISSET(listen_fd, &read_fds)) {
             int new_fd = accept(listen_fd, NULL, NULL);
             if (new_fd >= 0) {
-                add_client(new_fd);
+                add_client(&client_list, new_fd);
             }
         }
 
@@ -89,12 +92,39 @@ int main(int argc, char *argv[]) {
         while(curr != NULL){
             client *next_client = curr->next;
 
-            if(FD_ISSET(curr->fd, &read_fds))
-            
+            if(FD_ISSET(curr->fd, &read_fds)){
+                int space_left = MAX_BUFF - curr->buff_size;
+                int bytes_read = read(curr->fd, curr->buff + curr->buff_size, space_left, 0);
+                
+                if(bytes_read <= 0){
+                    remove_client(&client_list, curr->fd);
+                } else {
+                    curr->buff_size += bytes_read;
+                    
+                    int line_start = 0;
+                    for(int i = 0; i < curr->buff_size; i++){
+                        if(curr->buff[i] == '\n'){
+                            curr->buff[i] = '\0';
+                            process_message(curr->fd, curr->buff + line_start, &client_list);
+                            line_start = i + 1;
+                        }
+                    }
+
+                    if(line_start > 0){
+                        int remaining = curr->buff_size - line_start;
+                        memmove(curr->buff, curr->buff + line_start, remaining);
+                        curr->buff_size = remaining;
+                    }else if(curr->buff_size >= 100){
+                        remove_client(&client_list, curr);
+                    }
+                }
+            }
+            curr = next_client;
 
         }
 
-
+    }
     close(listen_fd);
     return 0;
+    
 }
