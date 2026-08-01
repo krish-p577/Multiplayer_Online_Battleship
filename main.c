@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
                     for(int i = 0; i < curr->buff_size; i++){
                         if(curr->buff[i] == '\n'){
                             curr->buff[i] = '\0';
-                            process_message(curr->fd, curr->buff + line_start, &client_list);
+                            process_message(&client_list, curr, curr->buff + line_start);
                             line_start = i + 1;
                         }
                     }
