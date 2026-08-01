@@ -7,6 +7,6 @@ void process_message(client **head, client *curr_client, char *msg);
 
 void send_exact(client **head, client *curr_client, char *msg);
 
-void send_message(client **head, client *curr_client, char *msg);
+void send_message(client **head, char *msg);
 
 #endif

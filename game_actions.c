@@ -8,7 +8,21 @@ void send_exact(client **head, client *curr_client, char *msg) {
     int len = strlen(msg);
     int written = write(curr_client->fd, msg, len);
     if (written < len) {
+        // message didnt go through so you bin the client
         remove_client(head, curr_client);
+    }
+}
+
+void send_message(client **head, char *msg){
+    client *curr = *head;
+
+
+    while (curr != NULL) {
+        client *next_client = curr->next;
+        if (curr->state ==1){
+            send_exact(head, curr, msg);
+        }
+        curr = next_client;
     }
 }
 
