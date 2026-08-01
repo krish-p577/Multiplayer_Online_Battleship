@@ -4,7 +4,7 @@
 #include "client_actions.h"
 #include "game_actions.h"
 
-void send_message(client **head, client *curr_client, char *msg) {
+void send_exact(client **head, client *curr_client, char *msg) {
     int len = strlen(msg);
     int written = write(curr_client->fd, msg, len);
     if (written < len) {
@@ -50,7 +50,7 @@ void process_message(client **head, client *sender, char *msg){
             }
 
             if (!valid_name || !valid_bounds) {
-                send_exact(sender->fd, "INVALID\n");
+                send_exact(head, sender, "INVALID\n");
                 return;
             }
 
@@ -58,7 +58,7 @@ void process_message(client **head, client *sender, char *msg){
             client *curr = *head;
             while (curr != NULL) {
                 if (curr->state == 1 && strcmp(curr->name, name) == 0) {
-                    send_exact(sender->fd, "TAKEN\n");
+                    send_exact(head, sender, "TAKEN\n");
                     return;
                 }
                 curr = curr->next;
@@ -71,7 +71,7 @@ void process_message(client **head, client *sender, char *msg){
             
             sender->state = 1;
             
-            send_exact(sender->fd, "WELCOME\n");
+            send_exact(head, sender, "WELCOME\n");
             
             
             char join_msg[100];
@@ -79,7 +79,7 @@ void process_message(client **head, client *sender, char *msg){
             broadcast(*head, join_msg);
             
         } else {
-            send_exact(sender->fd, "INVALID\n");
+            send_exact(head, sender, "INVALID\n");
         }
     } 
 
@@ -131,11 +131,11 @@ void process_message(client **head, client *sender, char *msg){
             }
             
         } else {
-            send_exact(sender->fd, "INVALID\n");
+            send_exact(head, sender, "INVALID\n");
         }
     } 
 
     else {
-        send_exact(sender->fd, "INVALID\n");
+        send_exact(head, sender, "INVALID\n");
     }
 }
