@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
         if (FD_ISSET(listen_fd, &read_fds)) {
             int new_fd = accept(listen_fd, NULL, NULL);
             if (new_fd >= 0) {
-                add_client(&client_list, new_fd);
+                create_client(&client_list, new_fd);
             }
         }
 
