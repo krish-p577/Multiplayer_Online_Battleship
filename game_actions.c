@@ -28,7 +28,7 @@ void send_message(client **head, char *msg){
 }
 
 void process_message(client **head, client *sender, char *msg){
-
+    // user tries to register
     if (strncmp(msg, "REG ", 4) == 0) {
         char name[100];
         int x, y;
@@ -101,7 +101,7 @@ void process_message(client **head, client *sender, char *msg){
             send_exact(head, sender, "INVALID\n");
         }
     } 
-
+// user tries to bomb
     else if (strncmp(msg, "BOMB ", 5) == 0) {
         int tx, ty;
         
@@ -156,7 +156,7 @@ void process_message(client **head, client *sender, char *msg){
             send_exact(head, sender, "INVALID\n");
         }
     } 
-
+// user tries to say smth random
     else {
         send_exact(head, sender, "INVALID\n");
     }
