@@ -16,6 +16,7 @@ client *create_client(int fd, client **head) {
     memset(new_client->buff, 0, MAX_BUFF);
     memset(new_client->name, 0, MAX_NAME);
 
+
     new_client->hits = 0;
     for (int i = 0; i < 5; i++) {
         new_client->ship[i][2] = 0; // Initialize ship hits to 0
@@ -29,11 +30,12 @@ void remove_client(client **head, client *curr_client) {
     if (curr_client->state == 1){
         char msg[100];
         snprintf(msg, sizeof(msg), "GG %s\n", curr_client->name);
-
-        send_message(*head, msg);
+    
+        send_message(head, msg);
     }
 
     close(curr_client->fd);
+    
 
     if(*head == curr_client) {
         *head = curr_client->next;

@@ -9,6 +9,7 @@ void send_exact(client **head, client *curr_client, char *msg) {
     int written = write(curr_client->fd, msg, len);
     if (written < len) {
         // message didnt go through so you bin the client
+
         remove_client(head, curr_client);
     }
 }
@@ -19,7 +20,7 @@ void send_message(client **head, char *msg){
 
     while (curr != NULL) {
         client *next_client = curr->next;
-        if (curr->state ==1){
+        if (curr->state == 1){
             send_exact(head, curr, msg);
         }
         curr = next_client;
@@ -46,6 +47,10 @@ void process_message(client **head, client *sender, char *msg){
         
             int valid_bounds = 0;
             int temp_cells[5][3];
+
+            for (int i = 0; i < 5; i++) {
+                temp_cells[i][2] = 0; // Initialize ship hits to 0
+            }
             
             if (d == '-' && (x - 2 >= 0) && (x + 2 <= 9) && y >= 0 && y <= 9) {
             
@@ -90,7 +95,7 @@ void process_message(client **head, client *sender, char *msg){
             
             char join_msg[100];
             snprintf(join_msg, sizeof(join_msg), "JOIN %s\n", sender->name);
-            broadcast(*head, join_msg);
+            send_message(head, join_msg);
             
         } else {
             send_exact(head, sender, "INVALID\n");
@@ -114,22 +119,25 @@ void process_message(client **head, client *sender, char *msg){
                     for (int i = 0; i < 5; i++) {
                         if (curr->ship[i][0] == tx && curr->ship[i][1] == ty) {
                             hit_anything = 1;
+
                             
                             
                             if (curr->ship[i][2] == 0) {
                                 curr->ship[i][2] = 1;
-                                curr->hits++;
+                                curr->hits += 1;
                             }
+                            // fprintf(stderr, "FRAME IS  (%d, %d, %d). Total hits: %d\n", curr->ship[i][0], curr->ship[i][1], curr->ship[i][2], curr->hits);
                             
                             
                             char hit_msg[128];
                             snprintf(hit_msg, sizeof(hit_msg), "HIT %s %d %d %s\n", sender->name, tx, ty, curr->name);
-                            broadcast(*head, hit_msg);
+                            
+                            send_message(head, hit_msg);
                             
                             if (curr->hits == 5) {
 
                                 remove_client(head, curr);
-                                break; 
+                                // break; 
                             }
                         }
                     }
@@ -141,7 +149,7 @@ void process_message(client **head, client *sender, char *msg){
             if (!hit_anything) {
                 char miss_msg[128];
                 snprintf(miss_msg, sizeof(miss_msg), "MISS %s %d %d\n", sender->name, tx, ty);
-                broadcast(*head, miss_msg);
+                send_message(head, miss_msg);
             }
             
         } else {

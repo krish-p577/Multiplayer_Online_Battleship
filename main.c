@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <unistd.h>
+#include <unistd.h>
 #include <signal.h>
-// #include <sys/socket.h>
-// #include <netinet/in.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #include "client_actions.h"
 #include "game_actions.h"
@@ -57,8 +57,6 @@ int main(int argc, char *argv[]) {
 
     client *client_list = NULL; 
 
-    printf("Starting server on port %d...\n", port);
-
     fd_set read_fds;
     int max_fd;
 
@@ -84,7 +82,7 @@ int main(int argc, char *argv[]) {
         if (FD_ISSET(listen_fd, &read_fds)) {
             int new_fd = accept(listen_fd, NULL, NULL);
             if (new_fd >= 0) {
-                create_client(&client_list, new_fd);
+                create_client(new_fd, &client_list);
             }
         }
 
@@ -94,7 +92,13 @@ int main(int argc, char *argv[]) {
 
             if(FD_ISSET(curr->fd, &read_fds)){
                 int space_left = MAX_BUFF - curr->buff_size;
-                int bytes_read = read(curr->fd, curr->buff + curr->buff_size, space_left, 0);
+                int bytes_read = read(curr->fd, curr->buff + curr->buff_size, space_left);
+                if (bytes_read > 100) {
+                    client *c = curr;
+                    curr = next_client;
+                    remove_client(&client_list, c);
+                    continue;
+                }
                 
                 if(bytes_read <= 0){
                     remove_client(&client_list, curr);
@@ -110,12 +114,12 @@ int main(int argc, char *argv[]) {
                         }
                     }
 
-                    if(line_start > 0){
+                    if(curr->buff_size >= 100){
+                        remove_client(&client_list, curr);
+                    }else if(line_start > 0){
                         int remaining = curr->buff_size - line_start;
                         memmove(curr->buff, curr->buff + line_start, remaining);
                         curr->buff_size = remaining;
-                    }else if(curr->buff_size >= 100){
-                        remove_client(&client_list, curr);
                     }
                 }
             }
